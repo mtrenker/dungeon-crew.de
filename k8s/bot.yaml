@@ -3,8 +3,8 @@ kind: Deployment
 metadata:
   name: dungeon-bot
 spec:
-  # Enable only after provisioning the token and registering guild commands.
-  replicas: 0
+  # Single gateway session; the local bot must stay stopped.
+  replicas: 1
   revisionHistoryLimit: 3
   # Avoid overlapping gateway sessions during upgrades.
   strategy:
