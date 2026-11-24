@@ -1,0 +1,25 @@
+{
+  "name": "tavern-crew",
+  "private": true,
+  "packageManager": "pnpm@10.24.0",
+  "engines": {
+    "node": ">=22 <27"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel -r dev",
+    "dev:web": "pnpm --filter @tavern/web dev",
+    "dev:bot": "pnpm --filter @tavern/bot dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "eslint .",
+    "test": "pnpm --filter @tavern/bot test"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@types/node": "^22",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "16.4.6",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.73.0"
+  }
+}

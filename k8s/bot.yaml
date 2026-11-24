@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tavern-bot
+spec:
+  # Enable only after provisioning the token and registering guild commands.
+  replicas: 0
+  revisionHistoryLimit: 3
+  # Avoid overlapping gateway sessions during upgrades.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: tavern-bot
+  template:
+    metadata:
+      labels:
+        app: tavern-bot
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: bot
+          image: ghcr.io/mtrenker/tavern-crew-bot:bootstrap
+          env:
+            - name: DISCORD_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: tavern-discord
+                  key: token
+          ports:
+            - name: probes
+              containerPort: 3001
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          startupProbe:
+            httpGet:
+              path: /health
+              port: probes
+            periodSeconds: 5
+            failureThreshold: 12
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: probes
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: probes

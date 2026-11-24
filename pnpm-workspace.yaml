@@ -1,0 +1,11 @@
+packages:
+  - apps/*
+  - packages/*
+
+# Deny dependency lifecycle scripts unless reviewed here.
+onlyBuiltDependencies:
+  - esbuild
+  - sharp
+  - unrs-resolver
+
+minimumReleaseAge: 1440

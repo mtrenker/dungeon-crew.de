@@ -1,0 +1,6 @@
+/* Neutral scaffold, not a finished guild identity. */
+:root { color-scheme: dark; }
+body { margin: 0; background: #181a1b; color: #f4f1eb; font-family: system-ui, sans-serif; }
+main { max-width: 48rem; margin: 0 auto; padding: clamp(2rem, 8vw, 6rem) 1.5rem; }
+h1 { font-size: clamp(2.5rem, 8vw, 4rem); line-height: 1.1; }
+p { font-size: 1.125rem; line-height: 1.6; }
