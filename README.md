@@ -1,4 +1,4 @@
-# Tavern Crew
+# Dungeon Crew
 
 WoW Forever guild monorepo. TypeScript, pnpm workspaces, Next.js App Router,
 and discord.js. No database or shared runtime package until a feature needs one.
@@ -22,13 +22,32 @@ Install the application in your guild with `bot` and `applications.commands`
 scopes. No privileged gateway intents or administrator permissions are needed.
 
 ```sh
-pnpm --filter @tavern/bot commands:register
+pnpm --filter @dungeon/bot commands:register
 pnpm dev:bot
 ```
 
 Registration replaces this application's guild command list with the commands in
 `apps/bot/src/commands.ts`. Run it explicitly when commands change, not on startup.
 Try `/ping` in Discord. `pnpm dev` runs both apps and requires bot credentials.
+
+### Proton Pass (no plaintext secrets file)
+
+With an authenticated `pass-cli` session, copy `.env.pass.example` to
+`.env.pass` at the repository root and replace the vault/item placeholders.
+This ignored file contains only references, not secret values.
+Use unique vault/item names or IDs to avoid ambiguous lookups.
+
+```sh
+pnpm bot:register:pass  # Replaces this application's guild command list
+pnpm dev:bot:pass
+```
+
+These commands resolve references into the child process environment without
+writing credentials to disk. They use your current Proton Pass session; set
+`PROTON_PASS_SESSION_DIR` if using a dedicated session. Agent sessions also
+require a task-specific `PROTON_PASS_AGENT_REASON`.
+Runtime injection takes precedence over values in `apps/bot/.env`.
+The public application key is not needed for the Gateway connection.
 
 ## Checks
 
@@ -44,8 +63,8 @@ pnpm build
 `Dockerfile` has separate `web` and `bot` targets:
 
 ```sh
-docker build --target web -t tavern-web .
-docker build --target bot -t tavern-bot .
+docker build --target web -t dungeon-web .
+docker build --target bot -t dungeon-bot .
 kubectl kustomize k8s
 ```
 
@@ -63,7 +82,7 @@ repository and cluster registration are being established.
 Before the first deployment:
 
 1. Confirm the GitHub owner (manifests currently assume `mtrenker`), domain
-   `tavern-crew.de`, and target namespace `tavern-crew`.
+   `dungeon-crew.de`, and target namespace `dungeon-crew`.
 2. Publish images, then replace both `bootstrap` tags in
    `k8s/kustomization.yaml` with the published `sha-<full commit SHA>`.
    Make packages public or configure a registry pull secret.
@@ -71,7 +90,7 @@ Before the first deployment:
    at this repository's `main` branch and `k8s` path, with namespace creation
    enabled. clean.dev does not contain that external registration.
 4. Confirm DNS points at the ingress and the issuer exists.
-5. Provision a SealedSecret named `tavern-discord` in `tavern-crew` with key
+5. Provision a SealedSecret named `dungeon-discord` in `dungeon-crew` with key
    `token`. Add the sealed manifest to Kustomize resources. The sibling project
    uses controller `sealed-secrets-controller` in `kube-system`; verify that
    target before sealing. Never commit plaintext credentials or reuse clean.dev's

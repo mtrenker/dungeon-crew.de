@@ -9,7 +9,7 @@ COPY apps/bot/package.json apps/bot/package.json
 RUN pnpm install --frozen-lockfile
 COPY . .
 RUN pnpm build
-RUN pnpm --filter @tavern/bot deploy --prod --legacy /bot
+RUN pnpm --filter @dungeon/bot deploy --prod --legacy /bot
 
 FROM node:22-alpine AS web
 WORKDIR /app

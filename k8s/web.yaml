@@ -1,17 +1,17 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: tavern-web
+  name: dungeon-web
 spec:
   replicas: 1
   revisionHistoryLimit: 3
   selector:
     matchLabels:
-      app: tavern-web
+      app: dungeon-web
   template:
     metadata:
       labels:
-        app: tavern-web
+        app: dungeon-web
     spec:
       automountServiceAccountToken: false
       securityContext:
@@ -20,7 +20,7 @@ spec:
         fsGroup: 1000
       containers:
         - name: web
-          image: ghcr.io/mtrenker/tavern-crew-web:bootstrap
+          image: ghcr.io/mtrenker/dungeon-crew-web:bootstrap
           ports:
             - name: http
               containerPort: 3000
@@ -53,10 +53,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: tavern-web
+  name: dungeon-web
 spec:
   selector:
-    app: tavern-web
+    app: dungeon-web
   ports:
     - name: http
       port: 80

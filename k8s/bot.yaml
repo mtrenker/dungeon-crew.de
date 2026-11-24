@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: tavern-bot
+  name: dungeon-bot
 spec:
   # Enable only after provisioning the token and registering guild commands.
   replicas: 0
@@ -11,11 +11,11 @@ spec:
     type: Recreate
   selector:
     matchLabels:
-      app: tavern-bot
+      app: dungeon-bot
   template:
     metadata:
       labels:
-        app: tavern-bot
+        app: dungeon-bot
     spec:
       automountServiceAccountToken: false
       securityContext:
@@ -24,12 +24,12 @@ spec:
         fsGroup: 1000
       containers:
         - name: bot
-          image: ghcr.io/mtrenker/tavern-crew-bot:bootstrap
+          image: ghcr.io/mtrenker/dungeon-crew-bot:bootstrap
           env:
             - name: DISCORD_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: tavern-discord
+                  name: dungeon-discord
                   key: token
           ports:
             - name: probes

@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Tavern Crew",
-  description: "Tavern Crew, a WoW Forever guild.",
+  title: "Dungeon Crew",
+  description: "Dungeon Crew, a WoW Forever guild.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

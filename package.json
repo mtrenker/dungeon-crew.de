@@ -1,5 +1,5 @@
 {
-  "name": "tavern-crew",
+  "name": "dungeon-crew",
   "private": true,
   "packageManager": "pnpm@10.24.0",
   "engines": {
@@ -7,12 +7,14 @@
   },
   "scripts": {
     "dev": "pnpm --parallel -r dev",
-    "dev:web": "pnpm --filter @tavern/web dev",
-    "dev:bot": "pnpm --filter @tavern/bot dev",
+    "dev:web": "pnpm --filter @dungeon/web dev",
+    "dev:bot": "pnpm --filter @dungeon/bot dev",
+    "dev:bot:pass": "pass-cli run --env-file .env.pass -- pnpm dev:bot",
+    "bot:register:pass": "pass-cli run --env-file .env.pass -- pnpm --filter @dungeon/bot commands:register",
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
     "lint": "eslint .",
-    "test": "pnpm --filter @tavern/bot test"
+    "test": "pnpm --filter @dungeon/bot test"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
