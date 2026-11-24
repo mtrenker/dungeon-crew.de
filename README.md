@@ -76,26 +76,31 @@ overlapping sessions. Keep it at one replica unless sharding is implemented.
 
 CI checks and builds PRs, and publishes both images with full commit-SHA tags on
 main. It does not apply manifests or automatically change deployment tags yet.
-Unlike clean.dev's automatic image-tag commits, promotion is explicit while the
-repository and cluster registration are being established.
+Promotion is explicit: update the image digests in `k8s/kustomization.yaml` to
+promote a build. The initial pins refer to the successful `da6bf5f` build.
+Both images are publicly pullable; no registry credential is needed.
 
-Before the first deployment:
+First deployment order:
 
-1. Confirm the GitHub owner (manifests currently assume `mtrenker`), domain
-   `dungeon-crew.de`, and target namespace `dungeon-crew`.
-2. Publish images, then replace both `bootstrap` tags in
-   `k8s/kustomization.yaml` with the published `sha-<full commit SHA>`.
-   Make packages public or configure a registry pull secret.
-3. In the cluster's GitOps configuration, register an Argo CD Application pointing
-   at this repository's `main` branch and `k8s` path, with namespace creation
-   enabled. clean.dev does not contain that external registration.
-4. Confirm DNS points at the ingress and the issuer exists.
-5. Provision a SealedSecret named `dungeon-discord` in `dungeon-crew` with key
-   `token`. Add the sealed manifest to Kustomize resources. The sibling project
-   uses controller `sealed-secrets-controller` in `kube-system`; verify that
-   target before sealing. Never commit plaintext credentials or reuse clean.dev's
-   sealed secrets (they are bound to their names and namespaces).
-6. Register guild commands, then change the bot's replicas from 0 to 1 in Git.
+1. Merge the application deployment preparation before the infra registration.
+2. Register the Application from `mtrenker/infra` under
+   `argocd/applications/dungeon-crew.yaml`. It watches this repository's `main:k8s`
+   and creates namespace `dungeon-crew`. Its merge triggers automatic reconciliation.
+3. Observe Argo sync/health, the web deployment, `/api/health`, and TLS issuance
+   for `dungeon-crew.de`. DNS must reach the ingress and `letsencrypt-prod` must be ready.
+4. Verify `dungeon-discord` SealedSecret status without reading its decrypted data.
+   The encrypted token is bound to that name and namespace, using the production
+   `sealed-secrets-controller` in `kube-system`. No plaintext secret is committed.
+5. Leave the bot at zero replicas until the operator stops the local Pullbert
+   instance and explicitly approves activation. Guild commands are already registered.
+   Then change `k8s/bot.yaml` to one replica in a reviewed Git change.
 
-No cluster resources, Discord commands, DNS, or remote repository are created by
-this scaffold. No secret is needed to build either image.
+Rollback: revert image digests to the last working build for an application
+failure, or keep the bot at zero replicas to disable it. Removing the infra
+Application can cascade-delete its namespace resources via its finalizer;
+there is no application database or persistent volume in this deployment.
+Do not use imperative cluster changes to bypass GitOps.
+
+No secret is needed to build either image. Token rotation requires resealing the
+new token for the same namespace/name and restarting the bot after reconciliation;
+changing a Secret alone does not update an existing process's environment.
