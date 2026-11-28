@@ -1,0 +1,16 @@
+{
+  "name": "@dungeon/knowledge",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "./data/*.json": "./data/*.json"
+  },
+  "scripts": {
+    "test": "node --test"
+  }
+}
