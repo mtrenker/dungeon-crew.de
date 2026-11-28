@@ -22,15 +22,30 @@ jobs:
       - run: pnpm test
       - run: pnpm build
       - run: kubectl kustomize k8s > /tmp/manifests.yaml
+  # Web and bot are built and deployed separately: only the app whose files
+  # changed gets a new image. The file lists are in .github/scripts/apps.sh.
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      apps: ${{ steps.changed.outputs.apps }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: changed
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: echo "apps=$(.github/scripts/apps.sh changed "$BASE")" | tee -a "$GITHUB_OUTPUT"
   images:
-    needs: check
+    needs: [check, changes]
+    if: needs.changes.outputs.apps != '[]'
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
     strategy:
       matrix:
-        app: [web, bot]
+        app: ${{ fromJSON(needs.changes.outputs.apps) }}
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
@@ -80,29 +95,4 @@ jobs:
       - name: Pin image digests
         env:
           OWNER: ${{ github.repository_owner }}
-          DIGESTS: ${{ runner.temp }}/digests
-        run: |
-          # Runs can finish out of order. Only the newest change may promote,
-          # ignoring earlier promotions of the pins themselves.
-          newest=$(git log --first-parent -1 --format=%H -- . ':(exclude)k8s/kustomization.yaml')
-          if [ "$newest" != "$GITHUB_SHA" ]; then
-            echo "main has moved on to $newest; leaving promotion to that run."
-            exit 0
-          fi
-          file=k8s/kustomization.yaml
-          for app in web bot; do
-            digest=$(cat "$DIGESTS/digest-$app")
-            case "$digest" in sha256:*) ;; *) echo "No digest for $app"; exit 1 ;; esac
-            # The digest line directly follows the image's name line.
-            sed -i -E "\\|name: ghcr.io/$OWNER/dungeon-crew-$app\$|{n;s|digest: .*|digest: $digest|}" "$file"
-            grep -q "digest: $digest" "$file" || { echo "Could not pin $app in $file"; exit 1; }
-          done
-          kubectl kustomize k8s > /dev/null
-          if git diff --quiet; then
-            echo "Digests unchanged."
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -qam "Deploy ${GITHUB_SHA::7}"
-          git push origin HEAD:main
+        run: .github/scripts/apps.sh pin "$RUNNER_TEMP/digests"
