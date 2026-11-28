@@ -1,5 +1,7 @@
 # syntax=docker/dockerfile:1
-FROM node:22-alpine AS build
+# Web and bot build in separate stages, so building one image never runs the
+# other app's build.
+FROM node:22-alpine AS deps
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN corepack enable
@@ -9,7 +11,12 @@ COPY apps/bot/package.json apps/bot/package.json
 COPY packages/knowledge/package.json packages/knowledge/package.json
 RUN pnpm install --frozen-lockfile
 COPY . .
-RUN pnpm build
+
+FROM deps AS build
+RUN pnpm --filter @dungeon/web build
+
+FROM deps AS bot-build
+RUN pnpm --filter @dungeon/bot build
 RUN pnpm --filter @dungeon/bot deploy --prod --legacy /bot
 
 FROM node:22-alpine AS web
@@ -24,7 +31,7 @@ CMD ["node", "apps/web/server.js"]
 FROM node:22-alpine AS bot
 WORKDIR /app
 ENV NODE_ENV=production
-COPY --from=build --chown=node:node /bot ./
+COPY --from=bot-build --chown=node:node /bot ./
 USER node
 EXPOSE 3001
 CMD ["node", "dist/index.js"]

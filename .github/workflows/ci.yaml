@@ -22,15 +22,30 @@ jobs:
       - run: pnpm test
       - run: pnpm build
       - run: kubectl kustomize k8s > /tmp/manifests.yaml
+  # Web and bot are built and deployed separately: only the app whose files
+  # changed gets a new image. The file lists are in .github/scripts/apps.sh.
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      apps: ${{ steps.changed.outputs.apps }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: changed
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: echo "apps=$(.github/scripts/apps.sh changed "$BASE")" | tee -a "$GITHUB_OUTPUT"
   images:
-    needs: check
+    needs: [check, changes]
+    if: needs.changes.outputs.apps != '[]'
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
     strategy:
       matrix:
-        app: [web, bot]
+        app: ${{ fromJSON(needs.changes.outputs.apps) }}
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
@@ -41,6 +56,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - uses: docker/build-push-action@v6
+        id: build
         with:
           context: .
           target: ${{ matrix.app }}
@@ -48,3 +64,35 @@ jobs:
           tags: ghcr.io/${{ github.repository_owner }}/dungeon-crew-${{ matrix.app }}:sha-${{ github.sha }}
           cache-from: type=gha,scope=${{ matrix.app }}
           cache-to: type=gha,mode=max,scope=${{ matrix.app }}
+      - if: github.event_name == 'push'
+        run: echo "${{ steps.build.outputs.digest }}" > digest-${{ matrix.app }}
+      - if: github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: digest-${{ matrix.app }}
+          path: digest-${{ matrix.app }}
+          retention-days: 1
+  # Promotes the images just built: pins their digests in k8s/kustomization.yaml
+  # on main, which Argo CD then syncs. A push made with GITHUB_TOKEN starts no
+  # new workflow run, so this cannot loop.
+  deploy:
+    if: github.event_name == 'push'
+    needs: images
+    runs-on: ubuntu-latest
+    concurrency: deploy
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: digest-*
+          path: ${{ runner.temp }}/digests
+          merge-multiple: true
+      - name: Pin image digests
+        env:
+          OWNER: ${{ github.repository_owner }}
+        run: .github/scripts/apps.sh pin "$RUNNER_TEMP/digests"
