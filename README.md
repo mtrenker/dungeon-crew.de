@@ -85,9 +85,9 @@ port 3001, no Service or public ingress, and a Recreate strategy to avoid
 overlapping sessions. Keep it at one replica unless sharding is implemented.
 
 CI checks and builds PRs, and publishes both images with full commit-SHA tags on
-main. It does not apply manifests or automatically change deployment tags yet.
-Promotion is explicit: update the image digests in `k8s/kustomization.yaml` to
-promote a build. The initial pins refer to the successful `da6bf5f` build.
+main. Every merge to main is then deployed: the `deploy` job pins the new image
+digests in `k8s/kustomization.yaml` with a "Deploy <sha>" commit, and Argo CD
+syncs it. CI never touches the cluster itself.
 Both images are publicly pullable; no registry credential is needed.
 
 First deployment order:
@@ -105,8 +105,9 @@ First deployment order:
    instance and explicitly approves activation. Guild commands are already registered.
    Then change `k8s/bot.yaml` to one replica in a reviewed Git change.
 
-Rollback: revert image digests to the last working build for an application
-failure, or keep the bot at zero replicas to disable it. Removing the infra
+Rollback: revert the faulty change on main, which builds and deploys again, or
+keep the bot at zero replicas to disable it. Reverting only a "Deploy" commit
+also works, but holds just until the next merge. Removing the infra
 Application can cascade-delete its namespace resources via its finalizer;
 there is no application database or persistent volume in this deployment.
 Do not use imperative cluster changes to bypass GitOps.
