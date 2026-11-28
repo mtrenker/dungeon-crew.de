@@ -1,0 +1,22 @@
+{
+  "warcraftmaps": {
+    "name": "WarcraftMaps",
+    "url": "https://warcraftmaps.com/gold",
+    "note": "Farm guides, gathering routes, zone levels. Gold per hour is estimated from Classic drop chances and EU PvP Horde auction prices."
+  },
+  "conquestcapped": {
+    "name": "ConquestCapped",
+    "url": "https://conquestcapped.com/guides/wow-forever/wow-forever-gold-farming/",
+    "note": "Per-kill values and level 60 farms, EU auction prices from mid November 2026."
+  },
+  "forevermastery": {
+    "name": "Forever Mastery",
+    "url": "https://forevermastery.com/en/professions/skinning",
+    "note": "Profession data: beast level bands, herb and fishing skills, EU Normal Alliance prices."
+  },
+  "mmonster": {
+    "name": "MMonster",
+    "url": "https://mmonster.co/wow-forever/guides/gold",
+    "note": "Zone lists without rates."
+  }
+}

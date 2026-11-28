@@ -1,7 +1,12 @@
 # Dungeon Crew
 
 WoW Forever guild monorepo. TypeScript, pnpm workspaces, Next.js App Router,
-and discord.js. No database or shared runtime package until a feature needs one.
+and discord.js. No database until a feature needs one.
+
+`packages/knowledge` holds WoW Forever game knowledge as plain JSON (zones,
+dungeons, farming spots with mob levels, and their sources) plus the rules
+derived from it, such as the level a spot becomes viable. It has no build step
+and no dependencies, so the bot, the website or a script can all import it.
 
 ## Local development
 
@@ -28,7 +33,12 @@ pnpm dev:bot
 
 Registration replaces this application's guild command list with the commands in
 `apps/bot/src/commands.ts`. Run it explicitly when commands change, not on startup.
-Try `/ping` in Discord. `pnpm dev` runs both apps and requires bot credentials.
+Try `/ping` in Discord. `/farm` suggests gold farming spots for a character,
+given as an armory link (the bot reads level, class and gathering skills from
+the public armory page) or as level, professions and class. The spot list and
+its price estimates are data in `packages/knowledge/data/farm-spots.json`. A
+spot is only suggested once the mobs there are within reach of the character's
+level. `pnpm dev` runs both apps and requires bot credentials.
 
 ### Proton Pass (no plaintext secrets file)
 

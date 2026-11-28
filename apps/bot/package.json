@@ -12,6 +12,7 @@
     "commands:register": "node --env-file-if-exists=.env --import tsx src/register-commands.ts"
   },
   "dependencies": {
+    "@dungeon/knowledge": "workspace:*",
     "discord.js": "^14.28.1"
   },
   "devDependencies": {

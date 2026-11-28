@@ -14,7 +14,7 @@
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
     "lint": "eslint .",
-    "test": "pnpm --filter @dungeon/bot test"
+    "test": "pnpm -r --if-present test"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
