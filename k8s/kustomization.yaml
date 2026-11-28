@@ -8,8 +8,8 @@ resources:
   - discord-sealed-secret.yaml
 images:
   - name: ghcr.io/mtrenker/dungeon-crew-web
-    digest: sha256:d85af6d61064b56cc4a655f7e2f5fbff92fbbf808eb361ec4a14c59e9ada2ac9
+    digest: sha256:17be5afb640d6922d776c08c169d3cec972c53ffc8c12d2fab04fa03fc1bd10a
   - name: ghcr.io/mtrenker/dungeon-crew-bot
-    digest: sha256:6c7ab50b007a120c08f7c1d3496ef96400116e42a7b2874ed21daa0e07499539
+    digest: sha256:235db45b6f0efabd1252e8677095a0bab1e06f0f1de745384ae943c3de1f0ec3
 commonAnnotations:
   app.kubernetes.io/managed-by: argocd
